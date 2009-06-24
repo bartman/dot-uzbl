@@ -10,12 +10,17 @@ TRUSTED
 bbs.archlinux.org
 archlinux.org
 linux.com
+lwn.net
+jukie.net
 
 
 
 
 DENY
 www.icanhascheezburger.com
+tribalfusion.com
+doubleclick.net
+fastclick.net
 
 
 
