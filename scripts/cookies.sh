@@ -71,17 +71,34 @@ function parse_cookie () {
 
 # match cookies in cookies.txt againsh hostname and path
 function get_cookie () {
-	path_esc=${path//\//\\/}
-	cookie=`awk "/^[^\t]*$host\t[^\t]*\t$path_esc/" $cookie_file 2>/dev/null | tail -n 1`
-	if [ -z "$cookie" ]
-	then
-		false
-	else
-		read domain alow_read_other_subdomains path http_required expiration name value <<< "$cookie"
-		cookie="$name=$value" 
-		#echo "COOKIE $cookie" >> $HOME/cookielog
-		true
-	fi
+        local res=false
+        while read  c_domain  c_alow_read_other_subdomains  c_path  c_http_required  c_expiration  c_name  c_value ; do
+
+                if [[ "$c_domain" != "$host" ]] ; then
+                        # no direct match, can we do domain match?
+                        [[ "$c_alow_read_other_subdomains" = 'TRUE' ]] || continue
+                        # is $host a subdomain of $c_domain?
+                        [[ "$c_domain" = "${c_domain%$host}" ]]        && continue
+echo >&2 "       - decided that $host is a subdomain of $c_domain"
+                fi
+
+echo >&2 "       - HAVE $c_domain    $c_path    $c_value"
+
+                #if [[ -n "$path" ]] ; then
+                #        echo >&2 "         - $c_path  $path  ${c_path#$path}"
+                #        [[ "$c_path" = "${c_path#$path}" ]] && continue
+                #        echo >&2 "           - pass"
+                #fi
+
+                cookie="$c_name=$c_value" 
+
+                echo >&2 "COOKIE $cookie"
+
+                res=true
+        done < $cookie_file
+
+        echo >&2 "...... $res"
+        $res
 }
 
 [ $action == PUT ] && parse_cookie && echo -e "$field_domain\tFALSE\t$field_path\tFALSE\t$field_exp\t$field_name\t$field_value" >> $cookie_file
