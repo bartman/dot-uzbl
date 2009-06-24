@@ -1,4 +1,3 @@
-
 # example uzbl config. in a real config, we should obey the xdg spec
 # all settings are optional.  you can use uzbl without any config at all (but it won't do much)
 
@@ -9,9 +8,9 @@
 
 # TODO: ability to attach misc things (spawn <foo>, script <bar>,.. to internal events)
 # You can use any action in place of spawn
-set history_handler  = spawn /usr/share/uzbl/examples/scripts/history.sh
-set download_handler = spawn /usr/share/uzbl/examples/scripts/download.sh
-#set cookie_handler   = spawn /usr/share/uzbl/examples/scripts/cookies.sh
+set history_handler  = spawn $HOME/usr/share/uzbl/examples/scripts/history.sh
+set download_handler = spawn $HOME/usr/share/uzbl/examples/scripts/download.sh
+#set cookie_handler   = spawn $HOME/usr/share/uzbl/examples/scripts/cookies.sh
 
 set minimum_font_size = 6
 set font_size = 11
@@ -43,7 +42,7 @@ set reset_command_mode = 1
 # this var has precedence over reset_command_mode
 set always_insert_mode = 0
 # to start a local socks server, do : ssh -fND localhost:8118 localhost
-#set  proxy_url       = http://127.0.0.1:8118
+set  proxy_url       = http://127.0.0.1:3128
 #values 0-3
 #set  http_debug      = 0
 #set  useragent       = uzbl (Webkit WEBKIT_MAJOR.WEBKIT_MINOR.WEBKIT_MICRO)
@@ -60,16 +59,16 @@ bind    j         = scroll_vert 20
 bind    k         = scroll_vert -20
 bind    h         = scroll_horz -20
 bind    l         = scroll_horz 20
-bind    <<        = scroll_begin
-bind    >>        = scroll_end
-bind    b         = back
-bind    m         = forward
+bind    gg        = scroll_begin
+bind    G         = scroll_end
+bind    H         = back
+bind    L         = forward
 bind    s         = stop
 bind    r         = reload
 bind    R         = reload_ign_cache
-bind    +         = zoom_in
-bind    -         = zoom_out
-bind    t         = toggle_status
+bind    zi        = zoom_in
+bind    zo        = zoom_out
+bind    S         = toggle_status
 # Hilight matches. Notice the * after the slash - it makes the command incremental, i.e. gets called
 # on every character you type.  You can do `bind /_ = search %s' if you want it less interactive.
 bind    /*        = search %s
@@ -77,28 +76,32 @@ bind    ?*        = search_reverse %s
 #jump to next
 bind    n         = search
 bind    N         = search_reverse
-bind    gh        = uri http://www.uzbl.org
+bind    :gh       = uri http://www.uzbl.org
 #TODO: set uri?
 bind    o _       = uri %s
-bind    :wiki _   = uri http://wiki.archlinux.org/index.php/Special:Search?search=%s&go=Go
-bind    gg _      = uri http://www.google.com/search?q=%s
+bind    :o _      = uri %s
+bind    T         = sh "uzbl >/dev/null 2>&1 &"
+bind    t _       = sh "uzbl --uri \"%s\" >/dev/null 2>&1 &"
+bind    :t _      = sh "uzbl --uri \"%s\" >/dev/null 2>&1 &"
 bind    i         = toggle_insert_mode
 # disable insert mode (1 to enable).  note that Esc works to disable, regardless of this setting
-bind    I         = toggle_insert_mode 0
-bind    B         = spawn /usr/share/uzbl/examples/scripts/insert_bookmark.sh
-bind    U         = spawn /usr/share/uzbl/examples/scripts/load_url_from_history.sh
-bind    u         = spawn /usr/share/uzbl/examples/scripts/load_url_from_bookmarks.sh
+#bind    I         = toggle_insert_mode 0
+bind    B         = spawn $HOME/usr/share/uzbl/examples/scripts/insert_bookmark.sh
+bind    U         = spawn $HOME/usr/share/uzbl/examples/scripts/load_url_from_history.sh
+bind    u         = spawn $HOME/usr/share/uzbl/examples/scripts/load_url_from_bookmarks.sh
 # with the sample yank script, you can yank one of the arguments into clipboard/selection
-bind    yurl      = spawn /usr/share/uzbl/examples/scripts/yank.sh 8 primary
-bind    ytitle    = spawn /usr/share/uzbl/examples/scripts/yank.sh 9 clipboard
+#bind    yurl      = spawn $HOME/usr/share/uzbl/examples/scripts/yank.sh 8 primary
+#bind    ytitle    = spawn $HOME/usr/share/uzbl/examples/scripts/yank.sh 9 clipboard
 # does the same as yurl but without needing a script
-bind    y2url     = sh "echo -n $6 | xclip"
+bind    y         = sh "echo -n \"$6 [ $7 ]\" | xclip"
+bind    :yurl     = sh "echo -n $6 | xclip"
+bind    :ytitle   = sh "echo -n $7 | xclip"
 # go the page from primary selection
 bind    p         = sh "echo act uri `xclip -selection primary -o` > $4"
 # go to the page in clipboard
 bind    P         = sh "echo act uri `xclip -selection clipboard -o` > $4"
 bind    ZZ        = exit
-bind    S         = js alert("hi");
+bind    hi        = js alert("hi");
 # example showing how to use sh
 # it sends a command to the fifo, whose path is told via a positional param
 # if fifo_dir is not set, it'll echo to a file named (null) somewhere >:) remember to delete it
@@ -111,12 +114,30 @@ bind    XS        = sh 'echo "act script alert (\'This is sent by the shell via 
 # this is similar to how it works in vimperator (and konqueror)
 # TODO: did we resolve: "no click() event for hyperlinks so no referrer set" ?
 #hit F to toggle the Hints (now in form of link numbering)
-bind    F = script /usr/share/uzbl/examples/scripts/hint.js
+bind    F = script $HOME/usr/share/uzbl/examples/scripts/hint.js
 # the most stable version:
-bind    fl* = script /usr/share/uzbl/examples/scripts/follow_Numbers.js %s
+bind    fl* = script $HOME/usr/share/uzbl/examples/scripts/follow_Numbers.js %s
 # using strings, not polished yet:
-bind    fL* = script /usr/share/uzbl/examples/scripts/follow_Numbers_Strings.js %s
+bind    fL* = script $HOME/usr/share/uzbl/examples/scripts/follow_Numbers_Strings.js %s
 
 
 # "home" page if you will
 set uri = uzbl.org
+
+
+bind    :wiki _     =  uri http://wiki.archlinux.org/index.php/Special:Search?search=%s&go=Go
+bind    :g _        =  uri http://www.google.com/search?q=%s
+bind    :gl _       =  uri http://www.google.com/search?q=%s
+bind    :g _        =  uri http://www.google.com/search?q=%s
+bind    :gc _       =  uri http://www.google.com/codesearch?q=%s
+bind    :gl _       =  uri http://www.google.com/linux?q=%s
+bind    :lua _      =  uri http://pgl.yoyo.org/luai/i/%s
+bind    :archive _  =  uri http://web.archive.org/web/*/%s
+bind    :phone _    =  uri http://www.reversephonedetective.com/searchresults.php?p=%s
+bind    :wa _       =  uri http://www61.wolframalpha.com/input/?i=%s
+bind    :dict _     =  uri http://dictionary.reference.com/search?q=%s
+bind    :stock _    =  uri http://www.google.com/search?q=stocks:%s
+bind    :wp _       =  uri http://en.wikipedia.org/wiki/Special:Search?search=%s
+bind    :gmane _    =  uri http://mid.gmane.org/%s
+bind    :urban _    =  uri http://www.urbandictionary.com/define.php?term=%s
+bind    :oops _     =  uri http://www.kerneloops.org/search.php?search=%s&btnG=Function+Search
