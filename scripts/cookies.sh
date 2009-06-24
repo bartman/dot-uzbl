@@ -21,15 +21,8 @@
 # http://kb.mozillazine.org/Cookies.txt
 # don't always append cookies, sometimes we need to overwrite
 
-if [ -f /usr/share/uzbl/examples/configs/cookies ]
-then
-	file=/usr/share/uzbl/examples/configs/cookies
-else
-	file=./examples/configs/cookies #useful when developing
-fi
-
-#cookie_file=$XDG_DATA_HOME/uzbl/cookies.txt
-cookie_file=./examples/data/cookies.txt
+config_file=$HOME/.uzbl/configs/cookies
+cookie_file=$HOME/.uzbl/data/cookies.txt
 
 which zenity &>/dev/null || exit 2
 
@@ -101,7 +94,7 @@ exit
 # $1 = section (TRUSTED or DENY)
 # $2 =url
 function match () {
-	sed -n "/$1/,/^\$/p" $file 2>/dev/null | grep -q "^$host"
+	sed -n "/$1/,/^\$/p" $config_file 2>/dev/null | grep -q "^$host"
 }
 
 function fetch_cookie () {
