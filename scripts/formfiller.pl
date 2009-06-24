@@ -17,7 +17,8 @@
 use strict;
 use Switch;
 
-my $keydir = $ENV{XDG_CONFIG_HOME} . "/uzbl/forms";
+#my $keydir = $ENV{XDG_CONFIG_HOME} . "/uzbl/forms";
+my $keydir = $ENV{HOME} . "/.uzbl/data/forms";
 my ($config,$pid,$xid,$fifo,$socket,$url,$title,$cmd) = @ARGV;
 if($fifo eq "") { die "No fifo"; };
 
@@ -27,8 +28,8 @@ sub domain {
   return $url;
 };
 
-my $editor = "xterm -e vim";
-#my $editor = "gvim";
+#my $editor = "xterm -e vim";
+my $editor = "gvim";
 
 # ideally, there would be some way to ask uzbl for the html content instead of having to redownload it with
 #	Also, you may need to fake the user-agent on some sites (like facebook)
