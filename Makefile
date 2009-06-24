@@ -15,4 +15,5 @@ help:
 
 
 install:
-	ln -fs .uzbl/configs/uzbl.config ~/.config/uzbl
+	-test -f ~/.config/uzbl/config -a ! -L ~/.config/uzbl/config && mv ~/.config/uzbl/config ~/.config/uzbl/config.old
+	ln -fs ../../.uzbl/configs/uzbl.config ~/.config/uzbl/config
