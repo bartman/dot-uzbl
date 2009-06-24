@@ -3,7 +3,7 @@
 //
 // first, it needs to be loaded before every time it is used.
 // One way would be to use something like load_start_handler to send
-// "act script link_follower.js"
+// "script link_follower.js"
 //
 // when script is loaded, it can be invoked with
 // bind f* = js setHints("%s")
