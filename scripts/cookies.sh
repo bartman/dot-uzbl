@@ -45,7 +45,6 @@ field_name=
 field_value=
 field_exp='end_session'
 
-
 # FOR NOW LETS KEEP IT SIMPLE AND JUST ALWAYS PUT AND ALWAYS GET
 function parse_cookie () {
 	IFS=$';'
@@ -69,9 +68,14 @@ function parse_cookie () {
 	unset IFS
 }
 
+function write_cookie () {
+        echo -e "$field_domain\tFALSE\t$field_path\tFALSE\t$field_exp\t$field_name\t$field_value" >> $cookie_file
+}
+
 # match cookies in cookies.txt againsh hostname and path
-function get_cookie () {
+function print_cookies () {
         local res=false
+        declare -a cookies
         while read  c_domain  c_alow_read_other_subdomains  c_path  c_http_required  c_expiration  c_name  c_value ; do
 
                 if [[ "$c_domain" != "$host" ]] ; then
@@ -79,32 +83,46 @@ function get_cookie () {
                         [[ "$c_alow_read_other_subdomains" = 'TRUE' ]] || continue
                         # is $host a subdomain of $c_domain?
                         [[ "$c_domain" = "${c_domain%$host}" ]]        && continue
-echo >&2 "       - decided that $host is a subdomain of $c_domain"
                 fi
 
-echo >&2 "       - HAVE $c_domain    $c_path    $c_value"
-
+                # if $path is specified, make sure that c_path 
                 #if [[ -n "$path" ]] ; then
                 #        echo >&2 "         - $c_path  $path  ${c_path#$path}"
                 #        [[ "$c_path" = "${c_path#$path}" ]] && continue
                 #        echo >&2 "           - pass"
                 #fi
 
-                cookie="$c_name=$c_value" 
-
-                echo >&2 "COOKIE $cookie"
-
+                cookies[${#cookies[@]}]="$c_name=$c_value" 
                 res=true
         done < $cookie_file
 
-        echo >&2 "...... $res"
+        if $res ; then
+                # only output the last (most recent) for each name
+                local seen=:
+                for (( n=${#cookies[@]} - 1 ; n>=0 ; n-- )) ; do
+                        local cookie=${cookies[$n]}
+                        local name=${cookie%%=*}
+                        [[ "${seen/:$name:/}" = "$seen" ]] || continue
+                        echo $cookie
+                        seen="$seen$name:"
+                done
+        fi
+
         $res
 }
 
-[ $action == PUT ] && parse_cookie && echo -e "$field_domain\tFALSE\t$field_path\tFALSE\t$field_exp\t$field_name\t$field_value" >> $cookie_file
-[ $action == GET ] && get_cookie && echo "$cookie"
+case $action in
+    PUT)
+        parse_cookie && write_cookie
+        exit $?
+        ;;
+    GET)
+        print_cookies
+        exit $?
+        ;;
+esac
 
-exit
+exit 1
 
 
 # TODO: implement this later.
