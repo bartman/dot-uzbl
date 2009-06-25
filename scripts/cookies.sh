@@ -116,7 +116,7 @@ function policy_match () {
         local section=$1
         local host=$2
         [ -f $config_file ] || return 0
-	sed -n "/^ *$section *\$/,/^\$/p" $config_file 2>/dev/null | grep -q "^$host"
+	sed -n "/^ *$section *\$/,/^\$/p" $config_file 2>/dev/null | grep -q "^ *$host *\$"
 }
 
 function policy_add () {
