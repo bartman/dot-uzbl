@@ -22,7 +22,7 @@
 # don't always append cookies, sometimes we need to overwrite
 
 config_file=$HOME/.uzbl/configs/cookies
-cookie_file=$HOME/.uzbl/data/cookies.txt
+cookie_dir=$HOME/.uzbl/data/cookies
 
 which zenity &>/dev/null || exit 2
 
@@ -38,6 +38,9 @@ shift
 path=$9
 shift
 cookie=$9
+
+mkdir -p "$cookie_dir"
+cookie_file="$cookie_dir/$host"
 
 field_domain=$host
 field_path=$path
@@ -77,6 +80,9 @@ function write_cookie () {
 function print_cookies () {
         local res=false
         declare -a cookies
+
+        [[ -f $cookie_file ]] || return 1
+
         while read  c_domain  c_alow_read_other_subdomains  c_path  c_http_required  c_expiration  c_name  c_value ; do
 
                 if [[ "$c_domain" != "$host" ]] ; then
