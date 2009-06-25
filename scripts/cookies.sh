@@ -45,10 +45,9 @@ field_name=
 field_value=
 field_exp='end_session'
 
-# FOR NOW LETS KEEP IT SIMPLE AND JUST ALWAYS PUT AND ALWAYS GET
 function parse_cookie () {
 	IFS=$';'
-	first_pair=1
+	local first_pair=1
 	for pair in $cookie
 	do
 		if [ "$first_pair" == 1 ]
@@ -57,9 +56,10 @@ function parse_cookie () {
 			field_value=${pair#*=}
 			first_pair=0
 		else
-			read -r pair <<< "$pair" #strip leading/trailing wite space
-			key=${pair%%=*}
-			val=${pair#*=}
+			local key=${pair%%=*}
+                        key=${key#* }
+			local val=${pair#*=}
+                        val=${val% *}
 			[ "$key" == expires ] && field_exp=`date -u -d "$val" +'%s'`
 			# TODO: domain
 			[ "$key" == path ] && field_path=$val
@@ -68,6 +68,7 @@ function parse_cookie () {
 	unset IFS
 }
 
+# just append the cookie to the log
 function write_cookie () {
         echo -e "$field_domain\tFALSE\t$field_path\tFALSE\t$field_exp\t$field_name\t$field_value" >> $cookie_file
 }
@@ -111,42 +112,57 @@ function print_cookies () {
         $res
 }
 
-case $action in
-    PUT)
-        parse_cookie && write_cookie
-        exit $?
-        ;;
-    GET)
+function policy_match () {
+        local section=$1
+        local host=$2
+        [ -f $config_file ] || return 0
+	sed -n "/^ *$section *\$/,/^\$/p" $config_file 2>/dev/null | grep -q "^$host"
+}
+
+function policy_add () {
+        local section=$1
+        local host=$2
+        sed -i -e "s/^$section$/$section\n$host/" $config_file
+}
+
+policy_match DENY $host && exit 1
+
+if [[ $action = GET ]] ; then
         print_cookies
         exit $?
-        ;;
-esac
-
-exit 1
-
-
-# TODO: implement this later.
-# $1 = section (TRUSTED or DENY)
-# $2 =url
-function match () {
-	sed -n "/$1/,/^\$/p" $config_file 2>/dev/null | grep -q "^$host"
-}
-
-function fetch_cookie () {
-	cookie=`cat $cookie_file/$host.cookie`
-}
-
-function store_cookie () {
-	echo $cookie > $cookie_file/$host.cookie
-}
-
-if match TRUSTED $host
-then
-	[ $action == PUT ] && store_cookie $host
-	[ $action == GET ] && fetch_cookie && echo "$cookie"
-elif ! match DENY $host
-then
-	[ $action == PUT ] &&                 cookie=`zenity --entry --title 'Uzbl Cookie handler' --text "Accept this cookie from $host ?" --entry-text="$cookie"` && store_cookie $host
-	[ $action == GET ] && fetch_cookie && cookie=`zenity --entry --title 'Uzbl Cookie handler' --text "Submit this cookie to $host ?"   --entry-text="$cookie"` && echo $cookie
 fi
-exit 0
+
+[[ $action = PUT ]] || exit 1
+
+if ! parse_cookie ; then
+        zenity --error --title='Uzbl Cookie Handler' \
+            --text="Failed to parse cookie from $host for $path\n\n$cookie"
+        exit 1
+fi
+
+if ! ( policy_match TRUSTED $host ) ; then
+
+        choice=$(zenity --title 'Uzbl Cookie Handler' --list --radiolist \
+                --height 310 \
+                --text "We got this cookie from $host for $path\n\n${cookie//; /\\n}\n" \
+                --column "" \
+                --column "Action:" FALSE "Accept always" TRUE "Accept this time" FALSE "Deny this time" FALSE "Deny always")
+        case $choice in
+            Accept\ always)
+                policy_add TRUSTED $host
+                ;;
+            Accept\ this\ time)
+                # fall through
+                ;;
+            Deny\ always)
+                policy_add DENY $host
+                exit 1
+                ;;
+            *) # "Deny this time" and anything else
+                exit 1
+                ;;
+        esac
+fi
+
+write_cookie
+exit $?
