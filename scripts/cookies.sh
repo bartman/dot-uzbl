@@ -94,9 +94,7 @@ function print_cookies () {
 
                 # if $path is specified, make sure that c_path 
                 if [[ -n "$path" ]] ; then
-                        echo >&2 "         - $c_path  $path  ${c_path#$path}"
-                        [[ "$c_path" = "${c_path#$path}" ]] && continue
-                        echo >&2 "           - pass"
+                        [[ "$path" = "${path#$c_path}" ]] && continue
                 fi
 
                 cookies[${#cookies[@]}]="$c_name=$c_value" 
