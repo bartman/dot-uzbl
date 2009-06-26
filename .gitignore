@@ -1,5 +1,6 @@
 .*.swp
 *~
 data/forms
+data/cookies
 data/cookies.txt
 data/history
