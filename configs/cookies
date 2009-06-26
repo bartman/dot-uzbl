@@ -7,6 +7,12 @@
 
 
 TRUSTED
+www.youtube.com
+maps.google.ca
+www.osnews.com
+www2.userful.com
+ghak.pastebin.ca
+a.cbc.ca
 swik.net
 identi.ca
 gist.github.com
@@ -22,6 +28,15 @@ jukie.net
 
 
 DENY
+www.googleadservices.com
+view.atdmt.com
+a.collective-media.net
+www.enticelabs.com
+adserver.adtechus.com
+c12.statcounter.com
+bs.serving-sys.com
+beacon.scorecardresearch.com
+servedby.advertising.com
 avpa.dzone.com
 api.recaptcha.net
 edge.quantserve.com
