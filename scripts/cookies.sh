@@ -147,7 +147,8 @@ fi
 if ! ( policy_match TRUSTED $host ) ; then
 
         choice=$(zenity --title 'Uzbl Cookie Handler' --list --radiolist \
-                --height 310 \
+                --height 400 \
+                --width 800 \
                 --text "We got this cookie from $host for $path\n\n${cookie//; /\\n}\n" \
                 --column "" \
                 --column "Action:" FALSE "Accept always" TRUE "Accept this time" FALSE "Deny this time" FALSE "Deny always")
